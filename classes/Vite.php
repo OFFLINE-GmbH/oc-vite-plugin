@@ -72,7 +72,9 @@ class Vite
 
         $hash = hash('sha1', $manifestPath . $manifestFileName . implode('__', $includes));
 
-        $includeFiles = Cache::rememberForever("offline.vite.include_files.{$hash}", function () use ($manifestPath, $includes) {
+        $cache = Cache::supportsTags() ? Cache::tags('offline.vite') : Cache::store();
+
+        $includeFiles = $cache->rememberForever("offline.vite.include_files.{$hash}", function () use ($manifestPath, $includes) {
             $manifestPath = $this->theme->getPath() . '/' . $manifestPath;
             if (!file_exists($manifestPath)) {
                 throw new \RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
