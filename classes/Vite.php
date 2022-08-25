@@ -6,8 +6,8 @@ use Cms\Classes\Controller;
 use Cms\Classes\Theme;
 use Cms\Classes\ThemeManager;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use October\Rain\Support\Collection;
 use October\Rain\Support\Str;
 use October\Rain\Support\Traits\Singleton;
 
@@ -17,8 +17,11 @@ class Vite
 
     protected Controller $controller;
     protected Theme $theme;
+
+    protected string $manifestPath;
+    protected array $manifestCache = [];
+
     protected bool $devServerIncluded = false;
-    public string $manifestPath;
 
     public function __construct()
     {
@@ -65,31 +68,20 @@ class Vite
 
     /**
      * Include all assets from the manifest.json file.
+     * @throws \JsonException
      */
     protected function includeManifest(string $manifestFileName, array $includes)
     {
-        $manifestPath = $this->manifestPath;
+        $manifestPath = $this->theme->getPath() . '/' . $this->manifestPath;
+        if (!file_exists($manifestPath)) {
+            throw new \RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
+        }
 
-        $hash = hash('sha1', $manifestPath . $manifestFileName . implode('__', $includes));
-
-        $cache = Cache::supportsTags() ? Cache::tags('offline.vite') : Cache::store();
-
-        $includeFiles = $cache->rememberForever("offline.vite.include_files.{$hash}", function () use ($manifestPath, $includes) {
-            $manifestPath = $this->theme->getPath() . '/' . $manifestPath;
-            if (!file_exists($manifestPath)) {
-                throw new \RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
-            }
-
-            $manifest = collect(json_decode(file_get_contents($manifestPath), false, 512, JSON_THROW_ON_ERROR));
-
-            return $manifest->filter(fn ($value, $name) => in_array($name, $includes, true));
-        });
-
-        $outDir = $this->extractOutDir($manifestPath, $manifestFileName);
-
-        $includeFiles->each(function ($asset) use ($outDir) {
-            $this->includeManifestAsset($asset, $outDir);
-        });
+        $this->getManifest($manifestPath)->filter(
+            fn ($value, $name) => in_array($name, $includes, true)
+        )->each(
+            fn ($asset) => $this->includeManifestAsset($asset, $this->extractOutDir($manifestPath, $manifestFileName))
+        );
     }
 
     /**
@@ -135,5 +127,20 @@ class Vite
         $outDir = Str::replaceLast($manifestFileName, '', $manifestPath);
 
         return trim(Str::replace($this->theme->getPath(), '', $outDir), '/');
+    }
+
+    /**
+     * Read the manifest file from disk.
+     * Cache for later access.
+     */
+    protected function getManifest(string $manifestPath): Collection
+    {
+        if ($this->manifestCache[$manifestPath]) {
+            return $this->manifestPath[$manifestPath];
+        }
+
+        return $this->manifestCache[$manifestPath] = collect(
+            json_decode(file_get_contents($manifestPath), false, 512, JSON_THROW_ON_ERROR)
+        );
     }
 }

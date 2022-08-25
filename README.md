@@ -65,20 +65,6 @@ export default defineConfig({
 * To use Vite in development, start the Vite server using the `vite` command
 * To build assets for production, use the `vite build` command
 
-### ⚠ IMPORTANT ⚠
-
-Every time you issue a `vite build` command **in a production environment**, you need
-to call `php artisan cache:clear` afterwards, to clear the Vite manifest cache.
-
-If you cache store does support tagging, clear the `offline.vite` tag specifically.
-
-```bash
-# Rebuild, then clear cache
-vite build && php artisan cache:clear
-# Clear the vite tag only if tagging is supported
-# vite build && php artisan cache:clear --tags=offline.vite
-```
-
 ## Including Vite
 
 Use the `vite()` function anywhere in Twig to include assets as well as the Vite Dev Server (depending on the environment).
