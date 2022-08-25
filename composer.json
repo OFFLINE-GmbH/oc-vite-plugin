@@ -1,9 +1,12 @@
 {
     "name": "offline/vite-plugin",
     "type": "october-plugin",
-    "description": "No description provided yet...",
+    "description": "Vite integration for October CMS",
     "require": {
+        "php": ">=8.0",
+        "ext-json": "*",
         "composer/installers": "~1.0",
-        "october/rain": "^3.0"
+        "october/rain": "^3.0",
+        "laravel/framework": "^9.0"
     }
 }

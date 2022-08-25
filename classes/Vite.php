@@ -7,18 +7,22 @@ use Cms\Classes\Theme;
 use Cms\Classes\ThemeManager;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use JsonException;
 use October\Rain\Support\Collection;
 use October\Rain\Support\Str;
 use October\Rain\Support\Traits\Singleton;
+use RuntimeException;
 
 class Vite
 {
     use Singleton;
 
     protected Controller $controller;
+
     protected Theme $theme;
 
     protected string $manifestPath;
+
     protected array $manifestCache = [];
 
     protected bool $devServerIncluded = false;
@@ -30,7 +34,7 @@ class Vite
         $this->manifestPath = Config::get('offline.vite::config.manifest');
 
         if (!$this->manifestPath) {
-            throw new \RuntimeException('[OFFLINE.Vite] Set the VITE_MANIFEST env variable to the path of your manifest.json file.');
+            throw new RuntimeException('[OFFLINE.Vite] Set the VITE_MANIFEST env variable to the path of your manifest.json file.');
         }
     }
 
@@ -51,7 +55,7 @@ class Vite
     /**
      * Include the Vite dev server in development mode.
      * Otherwise, include all entry points from the manifest.
-     * @throws \JsonException
+     * @throws JsonException
      */
     protected function includeVite(
         array $includes,
@@ -68,13 +72,14 @@ class Vite
 
     /**
      * Include all assets from the manifest.json file.
-     * @throws \JsonException
+     * @throws JsonException
      */
     protected function includeManifest(string $manifestFileName, array $includes)
     {
         $manifestPath = $this->theme->getPath() . '/' . $this->manifestPath;
+
         if (!file_exists($manifestPath)) {
-            throw new \RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
+            throw new RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
         }
 
         $this->getManifest($manifestPath)->filter(
@@ -135,8 +140,8 @@ class Vite
      */
     protected function getManifest(string $manifestPath): Collection
     {
-        if ($this->manifestCache[$manifestPath]) {
-            return $this->manifestPath[$manifestPath];
+        if (isset($this->manifestCache[$manifestPath])) {
+            return $this->manifestCache[$manifestPath];
         }
 
         return $this->manifestCache[$manifestPath] = collect(

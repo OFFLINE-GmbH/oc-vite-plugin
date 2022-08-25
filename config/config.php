@@ -1,4 +1,5 @@
 <?php
+
 return [
-    'manifest' => env('VITE_MANIFEST', '')
+    'manifest' => env('VITE_MANIFEST', ''),
 ];

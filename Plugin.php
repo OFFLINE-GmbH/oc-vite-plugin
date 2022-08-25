@@ -1,6 +1,7 @@
-<?php namespace OFFLINE\Vite;
+<?php
 
-use Backend;
+namespace OFFLINE\Vite;
+
 use OFFLINE\Vite\Classes\Vite;
 use System\Classes\PluginBase;
 
@@ -20,7 +21,7 @@ class Plugin extends PluginBase
             'name'        => 'Vite',
             'description' => 'Integrate Vite in October CMS',
             'author'      => 'OFFLINE',
-            'icon'        => 'icon-bolt'
+            'icon'        => 'icon-bolt',
         ];
     }
 
@@ -28,9 +29,8 @@ class Plugin extends PluginBase
     {
         return [
             'functions' => [
-                'vite' => [Vite::class, 'init']
+                'vite' => [Vite::class, 'init'],
             ],
         ];
     }
-
 }
