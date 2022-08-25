@@ -2,7 +2,6 @@
 
 This plugin provides simple integration of [Vite](https://vitejs.dev/) for [October CMS](https://octobercms.com/).
 
-
 ## Setup
 
 For the Vite integration to work, you first need to set the `VITE_MANIFEST`
@@ -63,9 +62,8 @@ export default defineConfig({
 
 ## Workflow
 
-To use Vite in development, start the Vite server using the `vite` command.
-
-To build assets for production, use the `vite build` command.
+* To use Vite in development, start the Vite server using the `vite` command
+* To build assets for production, use the `vite build` command
 
 ### ⚠ IMPORTANT ⚠
 
@@ -83,7 +81,7 @@ vite build && php artisan cache:clear
 
 ## Including Vite
 
-Use the `vite()` function anywhere to include assets as well as the Vite Dev Server (depending on the environment).
+Use the `vite()` function anywhere in Twig to include assets as well as the Vite Dev Server (depending on the environment).
 
 You must provide an array of files to include as the first argument.
 All paths are relative to the theme directory.
@@ -97,7 +95,7 @@ All paths are relative to the theme directory.
 
 ### Dev Server
 
-By default, `local` is regarded as the dev environment. In a dev environment,
+By default, `local` is regarded as the dev environment. If your app environment is a dev environment,
 the first call to the `{{ vite() }}` function will include the Vite Dev Server.
 
 You can pass in different environments with the `devEnvs` parameter.
@@ -115,7 +113,7 @@ You can pass in different environments with the `devEnvs` parameter.
 By default, assets are loaded from `http://localhost:5173`. You can use the `host` parameter
 to adjust this value.
 
-{{ vite([ ... ], {
-host: 'http://localhost:8000'
-}) }}
+```twig
+{{ vite([ ... ], { host: 'http://localhost:8000' }) }}
+```
 
