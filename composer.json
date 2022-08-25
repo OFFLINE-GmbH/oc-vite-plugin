@@ -1,5 +1,5 @@
 {
-    "name": "offline/vite-plugin",
+    "name": "offline/oc-vite-plugin",
     "type": "october-plugin",
     "description": "Vite integration for October CMS",
     "require": {
