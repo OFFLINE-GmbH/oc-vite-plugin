@@ -1,4 +1,4 @@
-## OFFLINE.Vite ⚡
+## Vite ⚡integration for October CMS
 
 This plugin provides simple integration of [Vite](https://vitejs.dev/) for [October CMS](https://octobercms.com/) (Versions 3+).
 
