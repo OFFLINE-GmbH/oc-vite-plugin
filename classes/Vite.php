@@ -43,7 +43,6 @@ class Vite
      */
     public static function init(array $includes = [], array $args = []): void
     {
-        // If no options are specified, use all passed in params as
         self::instance()->includeVite(
             $includes,
             array_get($args, 'manifestFileName', 'manifest.json'),
