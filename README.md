@@ -1,4 +1,4 @@
-## OFFLINE.Vite :bolt:
+## OFFLINE.Vite ⚡
 
 This plugin provides simple integration of [Vite](https://vitejs.dev/) for [October CMS](https://octobercms.com/).
 
