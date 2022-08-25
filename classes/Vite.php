@@ -81,10 +81,12 @@ class Vite
             throw new RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
         }
 
+	$outDir = $this->extractOutDir($manifestPath, $manifestfileName);
+
         $this->getManifest($manifestPath)->filter(
             fn ($value, $name) => in_array($name, $includes, true)
         )->each(
-            fn ($asset) => $this->includeManifestAsset($asset, $this->extractOutDir($manifestPath, $manifestFileName))
+            fn ($asset) => $this->includeManifestAsset($asset, $outDir)
         );
     }
 
