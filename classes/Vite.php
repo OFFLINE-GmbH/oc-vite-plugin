@@ -23,9 +23,19 @@ class Vite
 
     protected string $manifestPath;
 
-    protected array $manifestCache = [];
+    protected Collection $manifestCache;
 
     protected bool $devServerIncluded = false;
+
+    protected bool $initialized = false;
+
+    protected array $devEnvs;
+
+    protected const EXT_JS = ['js', 'js', 'jsx', 'ts', 'tsx'];
+    protected const EXT_CSS = ['css'];
+
+    protected string $viteHost;
+    protected string $outDir;
 
     public function __construct()
     {
@@ -62,11 +72,16 @@ class Vite
         array $devEnvs = ['local'],
         string $viteHost = 'http://localhost:5173'
     ): void {
+        $this->devEnvs = $devEnvs;
+        $this->viteHost = $viteHost;
+
         if (in_array(App::environment(), $devEnvs, true)) {
             $this->includeDevServer($viteHost, $includes);
         } else {
             $this->includeManifest($manifestFileName, $includes);
         }
+
+        $this->initialized = true;
     }
 
     /**
@@ -81,28 +96,28 @@ class Vite
             throw new RuntimeException('[OFFLINE.Vite] Specified manifest file does not exist: ' . $manifestPath);
         }
 
-	$outDir = $this->extractOutDir($manifestPath, $manifestfileName);
+        $this->outDir = $this->extractOutDir($manifestPath, $manifestFileName);
 
         $this->getManifest($manifestPath)->filter(
             fn ($value, $name) => in_array($name, $includes, true)
         )->each(
-            fn ($asset) => $this->includeManifestAsset($asset, $outDir)
+            fn ($asset) => $this->includeManifestAsset($asset)
         );
     }
 
     /**
      * Include an asset from the manifest.json file.
      */
-    protected function includeManifestAsset(object $asset, string $outDir)
+    protected function includeManifestAsset(object $asset)
     {
-        if (Str::endsWith($asset->file, '.css')) {
-            $this->controller->addCss($outDir . '/' . $asset->file);
+        if (Str::endsWith($asset->file, self::EXT_CSS)) {
+            $this->controller->addCss("{$this->outDir}/{$asset->file}");
         } else {
-            $this->controller->addJs($outDir . '/' . $asset->file, ['type' => 'module']);
+            $this->controller->addJs("{$this->outDir}/{$asset->file}", ['type' => 'module']);
         }
 
         foreach (array_wrap($asset->css ?? []) as $css) {
-            $this->controller->addCss($outDir . '/' . $css);
+            $this->controller->addCss("{$this->outDir}/{$css}");
         }
     }
 
@@ -117,12 +132,65 @@ class Vite
         }
 
         foreach ($includes as $include) {
-            if (Str::endsWith($include, ['.ts', '.js', '.jsx', '.tsx'])) {
+            if (Str::endsWith($include, self::EXT_JS)) {
                 $this->controller->addJs("{$viteHost}/${include}", ['type' => 'module']);
             } else {
                 $this->controller->addCss("{$viteHost}/${include}");
             }
         }
+    }
+
+    /**
+     * Include an asset directly.
+     */
+    public function resolveAsset(string $asset)
+    {
+        if (!$this->initialized) {
+            throw new RuntimeException('[OFFLINE.Vite] Vite is not yet initialized. Call Vite::init() or {{ vite() }} with your configuration.');
+        }
+
+        if (in_array(App::environment(), $this->devEnvs, true)) {
+            return $this->resolveAssetDev($asset)->viaDev();
+        }
+
+        return $this->resolveAssetProd($asset)->viaProd();
+    }
+
+    /**
+     * Add an asset path from the vite dev server.
+     */
+    protected function resolveAssetDev(string $asset)
+    {
+        if (Str::endsWith($asset, self::EXT_JS)) {
+            return Asset::make("{$this->viteHost}/${asset}", ['type' => 'module']);
+        }
+
+        return Asset::make("{$this->viteHost}/${asset}");
+    }
+
+    /**
+     * Resolve an asset path from the manifest.json file.
+     */
+    protected function resolveAssetProd(string $assetPath)
+    {
+        $asset = $this->getManifest()->get($assetPath);
+        if (!$asset) {
+            throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetPath));
+        }
+
+        if (Str::endsWith($asset->src, self::EXT_CSS)) {
+            return Asset::make("{$this->outDir}/{$asset->file}");
+        }
+
+        // JS modules may contain additional CSS files.
+        $this->controller->addJs("{$this->outDir}/{$asset->file}", ['type' => 'module']);
+
+        $css = [];
+        foreach (array_wrap($asset->css ?? []) as $file) {
+            $css[] = "{$this->outDir}/{$file->file}";
+        }
+
+        return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module'], $css);
     }
 
     /**
@@ -139,13 +207,17 @@ class Vite
      * Read the manifest file from disk.
      * Cache for later access.
      */
-    protected function getManifest(string $manifestPath): Collection
+    protected function getManifest(?string $manifestPath = null): Collection
     {
-        if (isset($this->manifestCache[$manifestPath])) {
-            return $this->manifestCache[$manifestPath];
+        if (isset($this->manifestCache)) {
+            return $this->manifestCache;
         }
 
-        return $this->manifestCache[$manifestPath] = collect(
+        if (!$manifestPath) {
+            throw new RuntimeException('[OFFLINE.Vite] Missing manifest path.');
+        }
+
+        return $this->manifestCache = collect(
             json_decode(file_get_contents($manifestPath), false, 512, JSON_THROW_ON_ERROR)
         );
     }

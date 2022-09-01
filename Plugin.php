@@ -2,6 +2,10 @@
 
 namespace OFFLINE\Vite;
 
+use Cms\Classes\Controller;
+use Cms\Classes\ThemeManager;
+use October\Rain\Support\Facades\Event;
+use OFFLINE\Vite\Classes\Asset;
 use OFFLINE\Vite\Classes\Vite;
 use System\Classes\PluginBase;
 
@@ -11,6 +15,12 @@ use System\Classes\PluginBase;
 class Plugin extends PluginBase
 {
     /**
+     * Use this string to include a vite asset
+     * via the addJs/addCss methods.
+     */
+    const VITE_ASSET_TOKEN = 'vite:';
+
+    /**
      * Returns information about this plugin.
      *
      * @return array
@@ -18,10 +28,10 @@ class Plugin extends PluginBase
     public function pluginDetails()
     {
         return [
-            'name'        => 'Vite',
+            'name' => 'Vite',
             'description' => 'Integrate Vite in October CMS',
-            'author'      => 'OFFLINE',
-            'icon'        => 'icon-bolt',
+            'author' => 'OFFLINE',
+            'icon' => 'icon-bolt',
         ];
     }
 
@@ -32,5 +42,39 @@ class Plugin extends PluginBase
                 'vite' => [Vite::class, 'init'],
             ],
         ];
+    }
+
+    public function register()
+    {
+        // Replace the `vite:` token when adding JS/CSS assets.
+        Event::listen('system.assets.beforeAddAsset', function (string $type, string &$path, array &$attributes) {
+            if (!str_contains($path, self::VITE_ASSET_TOKEN)) {
+                return;
+            }
+
+            $matches = [];
+            preg_match(sprintf('/%s(.+)$/', self::VITE_ASSET_TOKEN), $path, $matches);
+            if (count($matches) < 2) {
+                return;
+            }
+
+            $asset = Vite::instance()->resolveAsset($matches[1]);
+
+            if (!$asset instanceof Asset) {
+                return;
+            }
+
+            if ($asset->env === Asset::ENV_PROD) {
+                $controller = Controller::getController() ?? new Controller();
+
+                $path = $controller->themeUrl($asset->path);
+            } else {
+                $path = $asset->path;
+            }
+
+            foreach ($asset->attributes as $attribute => $value) {
+                $attributes[$attribute] = $value;
+            }
+        });
     }
 }

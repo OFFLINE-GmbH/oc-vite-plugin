@@ -85,6 +85,12 @@ All paths are relative to the theme directory.
 {{ vite([ 'resources/ts/main.ts' ]) }}
 ```
 
+Alternatively, you can use a special `vite:` token to include files in PHP:
+
+```php
+$this->controller->addJs('vite:resources/ts/main.ts');
+```
+
 ### Dev Server
 
 By default, `local` is regarded as the dev environment. If your app environment is a dev environment,
