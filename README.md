@@ -2,6 +2,8 @@
 
 This plugin provides simple integration of [Vite](https://vitejs.dev/) for [October CMS](https://octobercms.com/) (Versions 3+).
 
+During development, all files are loaded from a local Vite Dev Server. Once you switch to production, your bundled assets are included automatically.
+
 ## Setup
 
 Install the plugin using composer
@@ -68,8 +70,8 @@ export default defineConfig({
 
 ## Workflow
 
-* To use Vite in development, start the Vite server using the `vite` command
-* To build assets for production, use the `vite build` command
+* To use Vite in development, start the Vite server using the `vite` command. All assets in October are now included directly from the Vite Dev Server.
+* To build assets for production, use the `vite build` command. Once you switch the October environment to production, these bundled assets will be included.
 
 ## Including Vite
 
