@@ -187,7 +187,7 @@ class Vite
 
         $css = [];
         foreach (array_wrap($asset->css ?? []) as $file) {
-            $css[] = "{$this->outDir}/{$file->file}";
+            $css[] = "{$this->outDir}/{$file}";
         }
 
         return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module'], $css);

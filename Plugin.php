@@ -58,7 +58,13 @@ class Plugin extends PluginBase
                 return;
             }
 
-            $asset = Vite::instance()->resolveAsset($matches[1]);
+            try {
+                $asset = Vite::instance()->resolveAsset($matches[1]);
+            } catch (\Throwable $e) {
+                // Unfotunately, October swallows all exceptions from this event handler, so we can only log the error.
+                logger()->error("[OFFLINE.Vite] Failed to include asset '${matches[1]}': {$e->getMessage()}", ['exception' => $e]);
+                return;
+            }
 
             if (!$asset instanceof Asset) {
                 return;
