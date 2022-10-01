@@ -2,10 +2,7 @@
 
 namespace OFFLINE\Vite;
 
-use Cms\Classes\Controller;
-use Cms\Classes\ThemeManager;
 use October\Rain\Support\Facades\Event;
-use OFFLINE\Vite\Classes\Asset;
 use OFFLINE\Vite\Classes\Vite;
 use System\Classes\PluginBase;
 
@@ -39,48 +36,46 @@ class Plugin extends PluginBase
     {
         return [
             'functions' => [
-                'vite' => [Vite::class, 'init'],
+                'vite' => [Vite::class, 'includeAssets'],
             ],
         ];
     }
 
     public function register()
     {
+        Event::listen('cms.page.start', function () {
+            Vite::instance();
+        });
+
         // Replace the `vite:` token when adding JS/CSS assets.
-        Event::listen('system.assets.beforeAddAsset', function (string $type, string &$path, array &$attributes) {
-            if (!str_contains($path, self::VITE_ASSET_TOKEN)) {
-                return;
+        Event::listen('cms.assets.render', function ($type, &$result) {
+            $vite = Vite::instance();
+
+            $lines = array_map('trim', array_filter(explode("\n", $result)));
+            foreach ($lines as $number => $line) {
+                if (!str_contains($line, self::VITE_ASSET_TOKEN)) {
+                    continue;
+                }
+
+                $matches = [];
+                preg_match(sprintf('/%s([^">]+)/', self::VITE_ASSET_TOKEN), $line, $matches);
+                if (count($matches) < 2) {
+                    continue;
+                }
+
+                try {
+                    $asset = $vite->resolveAsset($matches[1]);
+                } catch (\Throwable $e) {
+                    // Unfotunately, October swallows all exceptions from this event handler, so we can only log the error.
+                    logger()->error("[OFFLINE.Vite] Failed to include asset '${matches[1]}': {$e->getMessage()}", ['exception' => $e]);
+                    return;
+                }
+
+                // Replace the original line with the included asset.
+                $lines[$number] = $asset->render();
             }
 
-            $matches = [];
-            preg_match(sprintf('/%s(.+)$/', self::VITE_ASSET_TOKEN), $path, $matches);
-            if (count($matches) < 2) {
-                return;
-            }
-
-            try {
-                $asset = Vite::instance()->resolveAsset($matches[1]);
-            } catch (\Throwable $e) {
-                // Unfotunately, October swallows all exceptions from this event handler, so we can only log the error.
-                logger()->error("[OFFLINE.Vite] Failed to include asset '${matches[1]}': {$e->getMessage()}", ['exception' => $e]);
-                return;
-            }
-
-            if (!$asset instanceof Asset) {
-                return;
-            }
-
-            if ($asset->env === Asset::ENV_PROD) {
-                $controller = Controller::getController() ?? new Controller();
-
-                $path = $controller->themeUrl($asset->path);
-            } else {
-                $path = $asset->path;
-            }
-
-            foreach ($asset->attributes as $attribute => $value) {
-                $attributes[$attribute] = $value;
-            }
+            $result = implode("\n", $lines);
         });
     }
 }

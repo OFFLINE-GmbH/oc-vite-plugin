@@ -2,8 +2,6 @@
 
 This plugin provides simple integration of [Vite](https://vitejs.dev/) for [October CMS](https://octobercms.com/) (Versions 3+).
 
-During development, all files are loaded from a local Vite Dev Server. Once you switch to production, your bundled assets are included automatically.
-
 ## Setup
 
 Install the plugin using composer
@@ -70,17 +68,15 @@ export default defineConfig({
 
 ## Workflow
 
-* To use Vite in development, start the Vite server using the `vite` command. All assets in October are now included directly from the Vite Dev Server.
-* To build assets for production, use the `vite build` command. Once you switch the October environment to production, these bundled assets will be included.
+* To use Vite in development, start the Vite server using the `vite` command
+* To build assets for production, use the `vite build` command
 
-## Including Vite
+## Including Vite Assets
 
-Use the `vite()` function anywhere in Twig to include assets as well as the Vite Dev Server (depending on the environment).
+Use the `vite()` function anywhere in Twig to include assets from the Vite Dev Server or the Vite manifest.json (depending on the environment).
 
 You must provide an array of files to include as the first argument.
 All paths are relative to the theme directory.
-
-### Including assets
 
 ```twig
 {# /themes/your-theme/resources/ts/main.ts #}
@@ -93,27 +89,23 @@ Alternatively, you can use a special `vite:` token to include files in PHP:
 $this->controller->addJs('vite:resources/ts/main.ts');
 ```
 
-### Dev Server
+## Environments
 
-By default, `local` is regarded as the dev environment. If your app environment is a dev environment,
-the first call to the `{{ vite() }}` function will include the Vite Dev Server.
+### Dev
 
-You can pass in different environments with the `devEnvs` parameter.
+By default, `local` and `dev` are regarded as dev environments. If your app environment is a dev environment,
+the Vite Dev Server will automatically be included for you.
 
-```twig
-{# Regard "testing" as a dev environment #}
-{{ vite([ ... ], { devEnvs: 'testing' }) }}
+You can use the following `.env` variables to configure how the Vite Dev Server is included:
 
-{# Regard "testing" or "local" as a dev environment #}
-{{ vite([ ... ], { devEnvs: ['testing', 'local'] }) }}
+```env
+# These are the defaults:
+VITE_MANIFEST_FILENAME=manifest.json
+VITE_DEV_ENVS=dev,local
+VITE_HOST=http://localhost:5173
 ```
 
-### Host
+### Production
 
-By default, assets are loaded from `http://localhost:5173`. You can use the `host` parameter
-to adjust this value.
-
-```twig
-{{ vite([ ... ], { host: 'http://localhost:8000' }) }}
-```
-
+If your app is configured to be run in a production environment, the plugin will automatically
+use the Vite manifest to include assets.
