@@ -82,9 +82,10 @@ You must provide an array of files to include as the first argument.
 All paths are relative to the theme directory.
 
 ```twig
-{# /themes/your-theme/resources/ts/main.ts #}
+{# includes /themes/your-theme/resources/ts/main.ts #}
 {{ vite([ 'resources/ts/main.ts' ]) }}
-{# or #}
+
+{# or using the object syntax: #}
 {{ vite([ { path: 'resources/ts/main.ts' }, { path: 'resources/scss/main.scss' } ]) }}
 ```
 
