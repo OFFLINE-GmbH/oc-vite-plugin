@@ -86,8 +86,8 @@ class Vite
 
     /**
      * Include an asset.
-     * @param string|array<string> $assets
-     * @return void
+     * @param string|array{path: string, render?: boolean} $assets
+     * @return string
      */
     public static function includeAssets($assets)
     {
@@ -95,18 +95,29 @@ class Vite
 
         $instance = self::instance();
 
-        foreach ($assets as $asset) {
-            $resolved = $instance->resolveAsset($asset);
+        $output = [];
 
-            $resolved->include($instance->getController());
+        foreach ($assets as $asset) {
+            $asset = $instance->normalizeAssetInput($asset);
+
+            $resolved = $instance->resolveAsset($asset);
+            if (Arr::get($asset, 'render', true)) {
+                $output[] = $resolved->render();
+            } else {
+                $resolved->include($instance->getController());
+            }
         }
+
+        return implode("\n", array_filter($output));
     }
 
     /**
      * Resolve an asset depending on the current env.
      */
-    public function resolveAsset(string $asset)
+    public function resolveAsset($asset)
     {
+        $asset = $this->normalizeAssetInput($asset);
+
         if (!$this->initialized) {
             throw new RuntimeException('[OFFLINE.Vite] Vite is not yet initialized. Something is wrong.');
         }
@@ -121,28 +132,28 @@ class Vite
     /**
      * Add an asset path from the vite dev server.
      */
-    protected function resolveAssetDev(string $asset)
+    protected function resolveAssetDev(array $asset)
     {
-        if (Str::endsWith($asset, self::EXT_JS)) {
-            return Asset::make("{$this->viteHost}/${asset}", ['type' => 'module'])->asJs();
+        if (Str::endsWith($asset['path'], self::EXT_JS)) {
+            return Asset::make("{$this->viteHost}/${asset['path']}", ['type' => 'module', ...$asset])->asJs();
         }
 
-        return Asset::make("{$this->viteHost}/${asset}")->asCss();
+        return Asset::make("{$this->viteHost}/${asset['path']}", $asset)->asCss();
     }
 
     /**
      * Resolve an asset path from the manifest.json file.
      * @throws JsonException
      */
-    protected function resolveAssetProd(string $assetPath)
+    protected function resolveAssetProd(array $assetInput)
     {
-        $asset = $this->getManifest()->get($assetPath);
+        $asset = $this->getManifest()->get($assetInput['path']);
         if (!$asset) {
-            throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetPath));
+            throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetInput));
         }
 
         if (Str::endsWith($asset->src, self::EXT_CSS)) {
-            return Asset::make("{$this->outDir}/{$asset->file}")->asCss();
+            return Asset::make("{$this->outDir}/{$asset->file}", $assetInput)->asCss();
         }
 
         $css = [];
@@ -150,7 +161,7 @@ class Vite
             $css[] = "{$this->outDir}/{$file}";
         }
 
-        return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module'], $css)->asJS();
+        return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module', ...$assetInput], $css)->asJS();
     }
 
     /**
@@ -203,5 +214,23 @@ class Vite
     protected function isDevEnvironment(): bool
     {
         return in_array(App::environment(), $this->devEnvs, true);
+    }
+
+    /**
+     * Make sure the input is in the expected format.
+     * @param $asset
+     * @return array
+     */
+    private function normalizeAssetInput($asset): array
+    {
+        if (!is_array($asset)) {
+            return ['path' => $asset];
+        }
+
+        if (!isset($asset['path'])) {
+            throw new RuntimeException(sprintf('[OFFLINE.Vite] Missing path in asset input: %s', json_encode($asset)));
+        }
+
+        return $asset;
     }
 }

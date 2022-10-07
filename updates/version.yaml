@@ -1,3 +1,4 @@
 1.0.1: First version of Vite
 1.0.2: Fixed style includes
 2.0.0: Simplified API, see README
+2.0.1: `vite()` function now generates output where it was called

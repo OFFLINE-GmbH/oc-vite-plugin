@@ -3,6 +3,7 @@
 namespace OFFLINE\Vite\Classes;
 
 use Cms\Classes\Controller;
+use October\Rain\Support\Arr;
 use October\Rain\Support\Facades\Html;
 
 class Asset
@@ -11,12 +12,15 @@ class Asset
     public const ENV_DEV = 'DEV';
     public string $type = '';
 
+    public const INTERNAL_ATTRIBUTES = ['path', 'render'];
+
     public function __construct(
         public string $path,
         public array $attributes = [],
         public array $relatedCss = [],
         public string $env = 'dev',
     ) {
+        $this->attributes = Arr::except($attributes, self::INTERNAL_ATTRIBUTES);
     }
 
     public static function make(string $path, array $attributes = [], array $relatedCss = [])

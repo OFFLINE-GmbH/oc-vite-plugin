@@ -23,7 +23,7 @@ so assets are included correctly.
 
 ## Configuring Vite
 
-Install Vite in your theme [according to the official docs](https://vitejs.dev/guide/).
+Install Vite via npm in your theme.
 
 ```bash
 npm install --dev vite@latest
@@ -44,7 +44,9 @@ const input = {
     css: resolve(__dirname, 'resources/scss/main.scss'),
 }
 
-const themeName = __dirname.match(/themes\/([^\/]+)/)[1];
+// Auto detect the theme name, works only if one theme is available.
+// const themeName = __dirname.match(/themes\/([^\/]+)/)[1];
+const themeName = 'your-theme'
 
 export default defineConfig({
     // Included assets will use this path as the base URL.
@@ -73,7 +75,8 @@ export default defineConfig({
 
 ## Including Vite Assets
 
-Use the `vite()` function anywhere in Twig to include assets from the Vite Dev Server or the Vite manifest.json (depending on the environment).
+Use the `vite()` function anywhere in Twig to include assets from the Vite Dev Server or the Vite manifest.json
+(depending on the environment).
 
 You must provide an array of files to include as the first argument.
 All paths are relative to the theme directory.
@@ -81,13 +84,41 @@ All paths are relative to the theme directory.
 ```twig
 {# /themes/your-theme/resources/ts/main.ts #}
 {{ vite([ 'resources/ts/main.ts' ]) }}
+{# or #}
+{{ vite([ { path: 'resources/ts/main.ts' } , { path: 'resources/scss/main.scss' } ]) }}
 ```
 
-Alternatively, you can use a special `vite:` token to include files in PHP:
+By default, the `vite()` function will output the required assets to your markup directly.
+
+### Using October's asset pipeline
+
+If you want to push assets to October's asset pipeline instead, you can set the `render` parameter to false.
+No output will be generated where the `vite()` function was called in this case.
+
+```twig
+{{ vite([ { path: 'resources/ts/main.ts', render: false } ]) }}
+```
+
+Remember to place the `{% styles %}` and `{% scripts %}` tags in your layout, for this to work.
+
+### Passing in additional attributes
+
+Any additional attributes will be passed to the generated HTML tag.
+
+```twig
+{{ vite([ { 'resources/ts/main.ts', { defer: true } ]) }}
+```
+
+### Including assets from PHP code
+
+You can use a special `vite:` token to include files in PHP:
 
 ```php
 $this->controller->addJs('vite:resources/ts/main.ts');
 ```
+
+The asset will now be included using October's asset pipeline and output wherever you have placed the `{% scripts %}` and `{% styles %}` tag.
+
 
 ## Environments
 
