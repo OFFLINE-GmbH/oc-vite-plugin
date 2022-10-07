@@ -85,7 +85,7 @@ All paths are relative to the theme directory.
 {# /themes/your-theme/resources/ts/main.ts #}
 {{ vite([ 'resources/ts/main.ts' ]) }}
 {# or #}
-{{ vite([ { path: 'resources/ts/main.ts' } , { path: 'resources/scss/main.scss' } ]) }}
+{{ vite([ { path: 'resources/ts/main.ts' }, { path: 'resources/scss/main.scss' } ]) }}
 ```
 
 By default, the `vite()` function will output the required assets to your markup directly.
