@@ -79,15 +79,15 @@ class Asset
     {
         if ($this->type === 'css') {
             $attributes = Html::attributes([
-                'rel' => 'stylesheet',
-                'href' => $this->path,
-                ...$this->attributes
-            ]);
+                    'rel' => 'stylesheet',
+                    'href' => $this->path
+                ] + $this->attributes
+            );
 
             return "<link $attributes>";
         }
 
-        $attributes = Html::attributes(['src' => $this->path, ...$this->attributes]);
+        $attributes = Html::attributes(['src' => $this->path] + $this->attributes);
 
         $script = "<script $attributes></script>";
         foreach ($this->relatedCss as $css) {

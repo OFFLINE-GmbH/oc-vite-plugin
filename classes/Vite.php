@@ -135,7 +135,7 @@ class Vite
     protected function resolveAssetDev(array $asset)
     {
         if (Str::endsWith($asset['path'], self::EXT_JS)) {
-            return Asset::make("{$this->viteHost}/${asset['path']}", ['type' => 'module', ...$asset])->asJs();
+            return Asset::make("{$this->viteHost}/${asset['path']}", ['type' => 'module'] + $asset)->asJs();
         }
 
         return Asset::make("{$this->viteHost}/${asset['path']}", $asset)->asCss();
@@ -161,7 +161,7 @@ class Vite
             $css[] = "{$this->outDir}/{$file}";
         }
 
-        return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module', ...$assetInput], $css)->asJS();
+        return Asset::make("{$this->outDir}/{$asset->file}", ['type' => 'module'] + $assetInput, $css)->asJS();
     }
 
     /**
