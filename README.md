@@ -50,7 +50,7 @@ const themeName = 'your-theme'
 
 export default defineConfig({
     // Included assets will use this path as the base URL.
-    base: `/themes/${themeName}/assets/build`,
+    base: `/themes/${themeName}/assets/build/`,
     build: {
         rollupOptions: { input },
         manifest: true,
