@@ -110,7 +110,7 @@ Remember to place the `{% styles %}` and `{% scripts %}` tags in your layout, fo
 Any additional attributes will be passed to the generated HTML tag.
 
 ```twig
-{{ vite([ { path: 'resources/ts/main.ts', { defer: true } ]) }}
+{{ vite([ { path: 'resources/ts/main.ts', defer: true ]) }}
 ```
 
 ### Including assets from PHP code
