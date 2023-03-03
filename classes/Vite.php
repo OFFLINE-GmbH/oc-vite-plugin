@@ -20,6 +20,14 @@ class Vite
 {
     use Singleton;
 
+    protected const EXT_JS = ['js', 'js', 'jsx', 'ts', 'tsx'];
+
+    protected const EXT_CSS = ['css', 'styl', 'less', 'sass', 'scss'];
+
+    protected const TYPE_JS = 'js';
+
+    protected const TYPE_CSS = 'css';
+
     protected Theme $theme;
 
     protected string $manifestPath;
@@ -34,13 +42,8 @@ class Vite
 
     protected array $devEnvs;
 
-    protected const EXT_JS = ['js', 'js', 'jsx', 'ts', 'tsx'];
-    protected const EXT_CSS = ['css', 'styl', 'less', 'sass', 'scss'];
-
-    protected const TYPE_JS = 'js';
-    protected const TYPE_CSS = 'css';
-
     protected string $viteHost;
+
     protected string $outDir;
 
     /**
@@ -75,19 +78,6 @@ class Vite
     }
 
     /**
-     * Include the Vite dev server and all specified assets.
-     */
-    protected function includeDevServer()
-    {
-        $controller = $this->getController();
-
-        if (!$this->devServerIncluded) {
-            $controller->addJs("{$this->viteHost}/@vite/client", ['type' => 'module']);
-            $this->devServerIncluded = true;
-        }
-    }
-
-    /**
      * Include an asset.
      * @param string|array{path: string, render?: boolean} $assets
      * @return string
@@ -104,6 +94,7 @@ class Vite
             $asset = $instance->normalizeAssetInput($asset);
 
             $resolved = $instance->resolveAsset($asset);
+
             if (Arr::get($asset, 'render', true)) {
                 $output[] = $resolved->render();
             } else {
@@ -116,6 +107,7 @@ class Vite
 
     /**
      * Resolve an asset depending on the current env.
+     * @param mixed $asset
      */
     public function resolveAsset($asset)
     {
@@ -130,6 +122,29 @@ class Vite
         }
 
         return $this->resolveAssetProd($asset)->viaProd();
+    }
+
+    /**
+     * Resolve a CMS controller.
+     *
+     * @return Controller
+     */
+    public function getController()
+    {
+        return Controller::getController() ?? new Controller();
+    }
+
+    /**
+     * Include the Vite dev server and all specified assets.
+     */
+    protected function includeDevServer()
+    {
+        $controller = $this->getController();
+
+        if (!$this->devServerIncluded) {
+            $controller->addJs("{$this->viteHost}/@vite/client", ['type' => 'module']);
+            $this->devServerIncluded = true;
+        }
     }
 
     /**
@@ -151,6 +166,7 @@ class Vite
     protected function resolveAssetProd(array $assetInput)
     {
         $asset = $this->getManifest()->get($assetInput['path']);
+
         if (!$asset) {
             throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetInput));
         }
@@ -160,6 +176,7 @@ class Vite
         }
 
         $css = [];
+
         foreach (array_wrap($asset->css ?? []) as $file) {
             $css[] = "{$this->outDir}/{$file}";
         }
@@ -182,6 +199,7 @@ class Vite
         }
 
         $path = $this->theme->getPath() . '/' . $this->manifestPath;
+
         if (!File::isLocalPath($path, true)) {
             throw new RuntimeException('[OFFLINE.Vite] Manifest path must be a local path inside your theme directory.');
         }
@@ -189,16 +207,6 @@ class Vite
         return $this->manifestCache = collect(
             json_decode(file_get_contents($path), false, 512, JSON_THROW_ON_ERROR)
         );
-    }
-
-    /**
-     * Resolve a CMS controller.
-     *
-     * @return Controller
-     */
-    public function getController()
-    {
-        return Controller::getController() ?? new Controller();
     }
 
     /**

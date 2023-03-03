@@ -9,10 +9,12 @@ use October\Rain\Support\Facades\Html;
 class Asset
 {
     public const ENV_PROD = 'PROD';
+
     public const ENV_DEV = 'DEV';
-    public string $type = '';
 
     public const INTERNAL_ATTRIBUTES = ['path', 'render'];
+
+    public string $type = '';
 
     public function __construct(
         public string $path,
@@ -39,15 +41,16 @@ class Asset
     {
         if ($this->type === 'css') {
             $controller->addCss($this->path, $this->attributes);
+
             return;
         }
 
         $controller->addJs($this->path, $this->attributes);
+
         foreach ($this->relatedCss as $css) {
             $controller->addCss($css);
         }
     }
-
 
     public function viaDev()
     {
@@ -80,21 +83,23 @@ class Asset
     public function render()
     {
         if ($this->type === 'css') {
-            $attributes = Html::attributes([
+            $attributes = Html::attributes(
+                [
                     'rel' => 'stylesheet',
-                    'href' => $this->path
+                    'href' => $this->path,
                 ] + $this->attributes
             );
 
-            return "<link $attributes>";
+            return "<link {$attributes}>";
         }
 
         $attributes = Html::attributes(['src' => $this->path] + $this->attributes);
 
-        $script = "<script $attributes></script>";
+        $script = "<script {$attributes}></script>";
+
         foreach ($this->relatedCss as $css) {
             $attributes = Html::attributes(['rel' => 'stylesheet', 'href' => $css]);
-            $script .= "<link $attributes>";
+            $script .= "<link {$attributes}>";
         }
 
         return $script;
