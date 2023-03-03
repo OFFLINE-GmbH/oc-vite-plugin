@@ -87,6 +87,9 @@ All paths are relative to the theme directory.
 
 {# or using the object syntax: #}
 {{ vite([ { path: 'resources/ts/main.ts' }, { path: 'resources/scss/main.scss' } ]) }}
+
+{# force a script/link tag if the asset has no extension:  #}
+{{ vite([ { path: '@some-special-vendor-asset', ext: 'js' }, { path: '@has-no-extension', ext: 'css' } ]) }}
 ```
 
 By default, the `vite()` function will output the required assets to your markup directly.

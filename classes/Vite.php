@@ -37,6 +37,9 @@ class Vite
     protected const EXT_JS = ['js', 'js', 'jsx', 'ts', 'tsx'];
     protected const EXT_CSS = ['css', 'styl', 'less', 'sass', 'scss'];
 
+    protected const TYPE_JS = 'js';
+    protected const TYPE_CSS = 'css';
+
     protected string $viteHost;
     protected string $outDir;
 
@@ -134,7 +137,7 @@ class Vite
      */
     protected function resolveAssetDev(array $asset)
     {
-        if (Str::endsWith($asset['path'], self::EXT_JS)) {
+        if ($asset['ext'] === self::TYPE_JS) {
             return Asset::make("{$this->viteHost}/${asset['path']}", ['type' => 'module'] + $asset)->asJs();
         }
 
@@ -152,7 +155,7 @@ class Vite
             throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetInput));
         }
 
-        if (Str::endsWith($asset->src, self::EXT_CSS)) {
+        if ($assetInput['ext'] === self::TYPE_CSS) {
             return Asset::make("{$this->outDir}/{$asset->file}", $assetInput)->asCss();
         }
 
@@ -224,11 +227,23 @@ class Vite
     private function normalizeAssetInput($asset): array
     {
         if (!is_array($asset)) {
-            return ['path' => $asset];
+            $asset = ['path' => $asset];
         }
 
         if (!isset($asset['path'])) {
             throw new RuntimeException(sprintf('[OFFLINE.Vite] Missing path in asset input: %s', json_encode($asset)));
+        }
+
+        if (!isset($asset['ext'])) {
+            if (Str::endsWith($asset['path'], self::EXT_JS)) {
+                $asset['ext'] = self::TYPE_JS;
+            } else {
+                $asset['ext'] = self::TYPE_CSS;
+            }
+        }
+
+        if (!in_array($asset['ext'], [self::TYPE_JS, self::TYPE_CSS], true)) {
+            throw new RuntimeException(sprintf('[OFFLINE.Vite] Invalid asset extension: %s', $asset['ext']));
         }
 
         return $asset;

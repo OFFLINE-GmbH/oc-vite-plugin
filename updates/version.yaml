@@ -4,3 +4,4 @@
 2.0.1: '`vite()` function now generates output where it was called'
 2.0.2: '`vite()` function now generates output where it was called'
 2.0.3: 'Fixed PHP 8.0 compatibility'
+2.0.4: 'Added support to force script/link tag based on a "ext" attribute'

@@ -25,6 +25,8 @@ class Asset
 
     public static function make(string $path, array $attributes = [], array $relatedCss = [])
     {
+        unset($attributes['ext']);
+
         return new self($path, $attributes, $relatedCss);
     }
 
