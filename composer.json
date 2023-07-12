@@ -7,6 +7,6 @@
         "ext-json": "*",
         "composer/installers": "~1.0",
         "october/rain": "^3.0",
-        "laravel/framework": "^9.0"
+        "laravel/framework": "^9.0|^10.0"
     }
 }
