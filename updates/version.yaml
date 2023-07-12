@@ -6,4 +6,4 @@
 2.0.3: 'Fixed PHP 8.0 compatibility'
 2.0.4: 'Added support to force script/link tag based on a "ext" attribute'
 2.0.5: 'fmt'
-2.0.6: 'Laravel 10 support'
+2.0.6: 'Added support for Laravel 10'
