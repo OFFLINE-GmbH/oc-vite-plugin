@@ -153,10 +153,10 @@ class Vite
     protected function resolveAssetDev(array $asset)
     {
         if ($asset['ext'] === self::TYPE_JS) {
-            return Asset::make("{$this->viteHost}/${asset['path']}", ['type' => 'module'] + $asset)->asJs();
+            return Asset::make("{$this->viteHost}/{$asset['path']}", ['type' => 'module'] + $asset)->asJs();
         }
 
-        return Asset::make("{$this->viteHost}/${asset['path']}", $asset)->asCss();
+        return Asset::make("{$this->viteHost}/{$asset['path']}", $asset)->asCss();
     }
 
     /**
