@@ -7,3 +7,4 @@
 2.0.4: 'Added support to force script/link tag based on a "ext" attribute'
 2.0.5: 'fmt'
 2.0.6: 'Added support for Laravel 10'
+2.0.7: 'Fixed usage of deprecated PHP syntax'
