@@ -69,7 +69,7 @@ class Plugin extends PluginBase
                 try {
                     $asset = $vite->resolveAsset($matches[1]);
                 } catch (Throwable $e) {
-                    // Unfotunately, October swallows all exceptions from this event handler, so we can only log the error.
+                    // Unfortunately, October swallows all exceptions from this event handler, so we can only log the error.
                     logger()->error("[OFFLINE.Vite] Failed to include asset '{$matches[1]}': {$e->getMessage()}", ['exception' => $e]);
 
                     return;
