@@ -168,7 +168,7 @@ class Vite
         $asset = $this->getManifest()->get($assetInput['path']);
 
         if (!$asset) {
-            throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetInput));
+            throw new RuntimeException(sprintf('[OFFLINE.Vite] Failed to find asset %s in manifest.json', $assetInput['path']));
         }
 
         if ($assetInput['ext'] === self::TYPE_CSS) {
