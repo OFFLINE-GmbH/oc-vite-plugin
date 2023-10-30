@@ -9,3 +9,4 @@
 2.0.6: 'Added support for Laravel 10'
 2.0.7: 'Fixed usage of deprecated PHP syntax'
 2.0.8: 'Fixed error handling for missing assets'
+2.0.9: 'Fixed deprecated PHP syntax'
