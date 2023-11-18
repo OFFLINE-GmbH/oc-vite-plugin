@@ -55,12 +55,16 @@ class Vite
         $this->manifestPath = Config::get('offline.vite::config.manifest');
         $this->manifestFilename = Config::get('offline.vite::config.manifest_filename');
         $this->devEnvs = Config::get('offline.vite::config.devEnvs');
-        $this->viteHost = Config::get('offline.vite::config.host');
         $this->outDir = $this->extractOutDir($this->manifestPath, $this->manifestFilename);
 
         if (!$this->manifestPath) {
             throw new RuntimeException('[OFFLINE.Vite] Set the VITE_MANIFEST env variable to the path of your manifest.json file.');
         }
+
+        // Starting from Vite 5 we need to add the output path to all included files from the dev server.
+        $viteHost = rtrim(Config::get('offline.vite::config.host'), '/');
+        $outDirWithoutHost = ltrim(parse_url($this->outDir, PHP_URL_PATH), '/');
+        $this->viteHost = "{$viteHost}/{$outDirWithoutHost}";
 
         $this->includeViteDevServer();
     }
@@ -198,9 +202,20 @@ class Vite
             throw new RuntimeException('[OFFLINE.Vite] Missing manifest path.');
         }
 
-        $path = $this->theme->getPath() . '/' . $this->manifestPath;
+        $hasValidManifest = false;
 
-        if (!File::isLocalPath($path, true)) {
+        for ($i = 0; $i < 2; $i++) {
+            $path = "{$this->theme->getPath()}/{$this->manifestPath}";
+            if (File::isLocalPath($path, true)) {
+                $hasValidManifest = true;
+                break;
+            }
+
+            // Try again with the new .vite directory added in Vite 5.
+            $this->manifestPath = Str::replaceLast($this->manifestFilename, ".vite/{$this->manifestFilename}", $this->manifestPath);
+        }
+
+        if (!$hasValidManifest) {
             throw new RuntimeException('[OFFLINE.Vite] Manifest path must be a local path inside your theme directory.');
         }
 
@@ -216,6 +231,9 @@ class Vite
     protected function extractOutDir(string $manifestPath, string $manifestFileName): string
     {
         $outDir = Str::replaceLast($manifestFileName, '', $manifestPath);
+
+        // Remove the `.vite` folder that was introduced in Vite 5.
+        $outDir = Str::replaceLast('.vite', '', $outDir);
 
         $clean = trim(Str::replace($this->theme->getPath(), '', $outDir), '/');
 
