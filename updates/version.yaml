@@ -11,3 +11,4 @@
 2.0.8: 'Fixed error handling for missing assets'
 2.0.9: 'Fixed deprecated PHP syntax'
 2.0.10: 'Added support for Vite 5'
+2.0.11: 'Added child theme support'
