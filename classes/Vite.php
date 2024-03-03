@@ -206,12 +206,23 @@ class Vite
 
         for ($i = 0; $i < 2; $i++) {
             $path = "{$this->theme->getPath()}/{$this->manifestPath}";
+
+            // Try to find the manifest file in the theme directory.
             if (File::isLocalPath($path, true)) {
                 $hasValidManifest = true;
                 break;
             }
 
-            // Try again with the new .vite directory added in Vite 5.
+            // If the theme has a parent theme, try to find the manifest file there.
+            if ($this->theme->hasParentTheme()) {
+                $path = str_replace($this->theme->getPath(), $this->theme->getParentTheme()->getPath(), $path);
+                if (File::isLocalPath($path, true)) {
+                    $hasValidManifest = true;
+                    break;
+                }
+            }
+
+            // Restart the loop again with the new .vite directory added in Vite 5.
             $this->manifestPath = Str::replaceLast($this->manifestFilename, ".vite/{$this->manifestFilename}", $this->manifestPath);
         }
 
@@ -233,11 +244,17 @@ class Vite
         $outDir = Str::replaceLast($manifestFileName, '', $manifestPath);
 
         // Remove the `.vite` folder that was introduced in Vite 5.
-        $outDir = Str::replaceLast('.vite', '', $outDir);
+        $normalized = Str::replaceLast('.vite', '', $outDir);
 
-        $clean = trim(Str::replace($this->theme->getPath(), '', $outDir), '/');
+        $clean = trim(Str::replace($this->theme->getPath(), '', $normalized), '/');
 
-        return URL::to(sprintf('/themes/%s/%s', $this->theme->getDirName(), $clean));
+        $outDir = sprintf('/themes/%s/%s', $this->theme->getDirName(), $clean);
+
+        if (!File::isLocalPath($outDir, true) && $this->theme->hasParentTheme()) {
+            $outDir = sprintf('/themes/%s/%s', $this->theme->getParentTheme()->getDirName(), $clean);
+        }
+
+        return URL::to($outDir);
     }
 
     protected function isDevEnvironment(): bool
