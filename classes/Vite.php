@@ -248,10 +248,10 @@ class Vite
 
         $clean = trim(Str::replace($this->theme->getPath(), '', $normalized), '/');
 
-        $outDir = sprintf('/themes/%s/%s', $this->theme->getDirName(), $clean);
+        $outDir = sprintf('themes/%s/%s', $this->theme->getDirName(), $clean);
 
         if (!File::isLocalPath($outDir, true) && $this->theme->hasParentTheme()) {
-            $outDir = sprintf('/themes/%s/%s', $this->theme->getParentTheme()->getDirName(), $clean);
+            $outDir = sprintf('themes/%s/%s', $this->theme->getParentTheme()->getDirName(), $clean);
         }
 
         return URL::to($outDir);
