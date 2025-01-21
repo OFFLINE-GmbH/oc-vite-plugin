@@ -63,6 +63,10 @@ export default defineConfig({
             // Do not use encrypted connections for the HMR websocket.
             protocol: 'ws',
         },
+        cors: {
+            // Your APP_URL
+            origin: 'http://app.test',
+        },
     }
 })
 
