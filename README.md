@@ -31,12 +31,23 @@ npm install --dev vite@latest
 yarn add -D vite@latest
 ```
 
+Install dotenv via npm in your theme.
+
+```bash
+npm install dotenv --save
+```
+
 You can adapt the following Vite configuration to bundle your theme assets:
 
 ```ts
 // themes/your-theme/vite.config.ts
 import { defineConfig } from 'vite'
 import { resolve, basename } from 'path'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: resolve(__dirname, '../../.env') })
+
+const corsOrigin = process.env.APP_URL || 'http://localhost'
 
 // Your JS/TS/CSS entrypoints.
 const input = {
@@ -65,7 +76,7 @@ export default defineConfig({
         },
         cors: {
             // Your APP_URL
-            origin: 'http://app.test',
+            origin: corsOrigin,
         },
     }
 })
