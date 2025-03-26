@@ -37,7 +37,7 @@ class Plugin extends PluginBase
     {
         return [
             'functions' => [
-                'vite' => [Vite::class, 'includeAssets'],
+                'vite' => [Vite::class, 'includeAssets', false],
             ],
         ];
     }
