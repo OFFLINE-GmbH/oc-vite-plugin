@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use JsonException;
 use October\Rain\Support\Arr;
-use October\Rain\Support\Collection;
+use Illuminate\Support\Collection;
 use October\Rain\Support\Facades\File;
 use October\Rain\Support\Str;
 use October\Rain\Support\Traits\Singleton;
