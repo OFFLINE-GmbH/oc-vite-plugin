@@ -52,7 +52,7 @@ class Plugin extends PluginBase
         Event::listen('cms.assets.render', function ($type, &$result) {
             $vite = Vite::instance();
 
-            $lines = array_map('trim', array_filter(explode("\n", $result)));
+            $lines = array_map('trim', array_filter(explode("\n", $result ?? '')));
 
             foreach ($lines as $number => $line) {
                 if (!str_contains($line, self::VITE_ASSET_TOKEN)) {
