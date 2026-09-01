@@ -18,3 +18,4 @@
 2.1.0: 'Fixed support for Ocober 4'
 2.1.1: 'Optimized PHP version compatibility'
 2.1.2: 'October 4 compat'
+2.1.3: 'October 4.3 / Laravel 13 compatibility'
